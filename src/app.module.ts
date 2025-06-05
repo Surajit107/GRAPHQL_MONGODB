@@ -6,6 +6,8 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { join } from 'path';
 import { Request, Response } from 'express';
 import { validate } from './config/env.validation';
+import { APP_GUARD } from '@nestjs/core';
+import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 
 // Core modules
 import { AuthModule } from './auth/auth.module';
@@ -14,6 +16,7 @@ import { UsersModule } from './users/users.module';
 // Shared modules
 import { CommonModule } from './common/common.module';
 import { ProductModule } from './product/product.module';
+import { HealthModule } from './common/health/health.module';
 
 @Module({
   imports: [
@@ -45,11 +48,18 @@ import { ProductModule } from './product/product.module';
     // Core modules
     AuthModule,
     UsersModule,
-    
+
     // Shared modules
     CommonModule,
-    
+    HealthModule,
+
     ProductModule,
   ],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: JwtAuthGuard,
+    },
+  ],
 })
-export class AppModule {} 
+export class AppModule { } 
