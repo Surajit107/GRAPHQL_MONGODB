@@ -25,8 +25,6 @@ const validateEnv = (): Config => {
         environment: (process.env.NODE_ENV as 'development' | 'production' | 'test') || 'development',
         corsOrigin: process.env.CORS_ORIGIN?.split(',') || ['http://localhost:3000'],
         jwtExpiresIn: process.env.JWT_EXPIRES_IN || '7d',
-        jwtRefreshSecret: process.env.JWT_REFRESH_SECRET || '',
-        jwtRefreshExpiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '30d',
         bcryptSaltRounds: parseInt(process.env.BCRYPT_SALT_ROUNDS || '12'),
         rateLimitWindowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS || '900000'),
         rateLimitMaxRequests: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || '100'),
@@ -35,7 +33,12 @@ const validateEnv = (): Config => {
         logLevel: validateLogLevel(process.env.LOG_LEVEL || 'debug'),
         logFilePath: process.env.LOG_FILE_PATH || 'logs/app.log',
         apiPrefix: process.env.API_PREFIX || '/api',
-        graphqlPath: process.env.GRAPHQL_PATH || '/graphql'
+        graphqlPath: process.env.GRAPHQL_PATH || '/graphql',
+        smtpHost: process.env.SMTP_HOST || '',
+        smtpPort: process.env.SMTP_PORT || '',
+        smtpUser: process.env.SMTP_USER || '',
+        smtpPassword: process.env.SMTP_PASSWORD || '',
+        smtpFrom: process.env.SMTP_FROM || '',
     };
 
     return config;
@@ -50,8 +53,6 @@ export type Config = {
   environment: 'development' | 'production' | 'test';
   corsOrigin: string[];
   jwtExpiresIn: string;
-  jwtRefreshSecret: string;
-  jwtRefreshExpiresIn: string;
   bcryptSaltRounds: number;
   rateLimitWindowMs: number;
   rateLimitMaxRequests: number;
@@ -61,4 +62,9 @@ export type Config = {
   logFilePath: string;
   apiPrefix: string;
   graphqlPath: string;
+  smtpHost: string;
+  smtpPort: string;
+  smtpUser: string;
+  smtpPassword: string;
+  smtpFrom: string;
 }; 

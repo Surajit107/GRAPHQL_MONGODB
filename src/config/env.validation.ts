@@ -19,9 +19,6 @@ class EnvironmentVariables {
   JWT_SECRET: string;
 
   @IsString()
-  JWT_REFRESH_SECRET: string;
-
-  @IsString()
   CORS_ORIGIN: string;
 
   @IsString()
@@ -32,9 +29,13 @@ const envSchema = z.object({
   NODE_ENV: z.nativeEnum(Environment).default(Environment.Development),
   MONGODB_URI: z.string().min(1),
   JWT_SECRET: z.string().min(1),
-  JWT_REFRESH_SECRET: z.string().min(1),
   CORS_ORIGIN: z.string().default('*'),
   PORT: z.string().default('3000'),
+  SMTP_HOST: z.string().min(1),
+  SMTP_PORT: z.string().min(1),
+  SMTP_USER: z.string().min(1),
+  SMTP_PASSWORD: z.string().min(1),
+  SMTP_FROM: z.string().min(1),
 });
 
 export function validate(config: Record<string, unknown>) {

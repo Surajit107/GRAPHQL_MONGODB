@@ -27,6 +27,10 @@ export class User extends Document {
   @Prop()
   twoFactorSecret?: string;
 
+  @Field(() => [String], { nullable: true })
+  @Prop({ type: [String], default: [] })
+  refreshTokens?: string[];
+
   @Field()
   @Prop({ default: false })
   isTwoFactorEnabled: boolean;

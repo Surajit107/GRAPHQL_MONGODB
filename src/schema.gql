@@ -3,8 +3,10 @@
 # ------------------------------------------------------
 
 type AuthResponse {
-  access_token: String!
-  user: User!
+  access_token: String
+  refresh_token: String
+  requires2FA: Boolean
+  user: User
 }
 
 input CreateUserInput {
@@ -19,18 +21,35 @@ A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date
 """
 scalar DateTime
 
+input Enable2FAInput {
+  secret: String!
+  userId: ID!
+}
+
 input LoginInput {
   email: String!
   password: String!
 }
 
+input LogoutInput {
+  refreshToken: String!
+  userId: ID!
+}
+
 type Mutation {
   createUser(createUserInput: CreateUserInput!): User!
+  disable2FA(userId: String!): Boolean!
+  enable2FA(enable2FAInput: Enable2FAInput!): Boolean!
+  generate2FASecret(userId: String!): TwoFASecretResponse!
   login(loginInput: LoginInput!): AuthResponse!
-  refreshToken: AuthResponse!
+  logout(logoutInput: LogoutInput!): Boolean!
+  refreshToken(refreshTokenInput: RefreshTokenInput!): AuthResponse!
+  refreshTokenWithAuth: AuthResponse!
   register(registerInput: RegisterInput!): AuthResponse!
   removeUser(id: ID!): User!
   updateUser(id: ID!, updateUserInput: UpdateUserInput!): User!
+  verify2FACode(verify2FAInput: Verify2FAInput!): Boolean!
+  verify2FALogin(verify2FALoginInput: Verify2FALoginInput!): AuthResponse!
 }
 
 type Query {
@@ -39,11 +58,21 @@ type Query {
   users: [User!]!
 }
 
+input RefreshTokenInput {
+  refreshToken: String!
+  userId: ID!
+}
+
 input RegisterInput {
   email: String!
   firstName: String!
   lastName: String!
   password: String!
+}
+
+type TwoFASecretResponse {
+  qr: String!
+  secret: String!
 }
 
 input UpdateUserInput {
@@ -61,6 +90,17 @@ type User {
   isEmailVerified: Boolean!
   isTwoFactorEnabled: Boolean!
   lastName: String!
+  refreshTokens: [String!]
   twoFactorSecret: String
   updatedAt: DateTime!
+}
+
+input Verify2FAInput {
+  code: String!
+  userId: ID!
+}
+
+input Verify2FALoginInput {
+  code: String!
+  userId: ID!
 }

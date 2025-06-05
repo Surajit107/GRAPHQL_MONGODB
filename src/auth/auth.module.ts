@@ -6,6 +6,7 @@ import { AuthService } from './services/auth.service';
 import { AuthResolver } from './resolvers/auth.resolver';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { UsersModule } from '../users/users.module';
+import { CommonModule } from '../common/common.module';
 
 @Module({
   imports: [
@@ -21,8 +22,9 @@ import { UsersModule } from '../users/users.module';
       }),
       inject: [ConfigService],
     }),
+    CommonModule,
   ],
   providers: [AuthService, AuthResolver, JwtStrategy],
   exports: [AuthService],
 })
-export class AuthModule {} 
+export class AuthModule { }

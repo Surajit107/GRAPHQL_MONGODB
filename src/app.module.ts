@@ -13,6 +13,7 @@ import { UsersModule } from './users/users.module';
 
 // Shared modules
 import { CommonModule } from './common/common.module';
+import { ProductModule } from './product/product.module';
 
 @Module({
   imports: [
@@ -38,7 +39,6 @@ import { CommonModule } from './common/common.module';
       driver: ApolloDriver,
       autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
       sortSchema: true,
-      playground: process.env.NODE_ENV !== 'production',
       context: ({ req, res }: { req: Request; res: Response }) => ({ req, res }),
     }),
 
@@ -48,6 +48,8 @@ import { CommonModule } from './common/common.module';
     
     // Shared modules
     CommonModule,
+    
+    ProductModule,
   ],
 })
 export class AppModule {} 

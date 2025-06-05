@@ -3,9 +3,15 @@ import { User } from '../../users/schemas/user.schema';
 
 @ObjectType()
 export class AuthResponse {
-  @Field()
-  access_token: string;
+  @Field({ nullable: true })
+  access_token?: string;
 
-  @Field(() => User)
-  user: User;
+  @Field({ nullable: true })
+  refresh_token?: string;
+
+  @Field(() => User, { nullable: true })
+  user?: User;
+
+  @Field({ nullable: true })
+  requires2FA?: boolean;
 } 
