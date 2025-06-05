@@ -9,7 +9,7 @@ const validateEnv = () => {
     const requiredEnvVars = [
         'PORT',
         'NODE_ENV',
-        'MONGO_URI',
+        'MONGODB_URI',
         'JWT_SECRET',
         'CORS_ORIGIN'
     ];
@@ -20,7 +20,7 @@ const validateEnv = () => {
     }
     const config = {
         port: parseInt(process.env.PORT || '4000'),
-        mongoUri: process.env.MONGO_URI || '',
+        mongoUri: process.env.MONGODB_URI || '',
         jwtSecret: process.env.JWT_SECRET || '',
         environment: process.env.NODE_ENV || 'development',
         corsOrigin: process.env.CORS_ORIGIN?.split(',') || ['http://localhost:3000'],
@@ -40,3 +40,4 @@ const validateEnv = () => {
     return config;
 };
 exports.env = validateEnv();
+//# sourceMappingURL=env.js.map

@@ -1,5 +1,3 @@
-import { Config } from '../types';
-
 const validateLogLevel = (level: string): 'error' | 'warn' | 'info' | 'debug' => {
     const validLevels = ['error', 'warn', 'info', 'debug'] as const;
     return validLevels.includes(level as any) ? (level as 'error' | 'warn' | 'info' | 'debug') : 'debug';
@@ -9,7 +7,7 @@ const validateEnv = (): Config => {
     const requiredEnvVars = [
         'PORT',
         'NODE_ENV',
-        'MONGO_URI',
+        'MONGODB_URI',
         'JWT_SECRET',
         'CORS_ORIGIN'
     ];
@@ -22,7 +20,7 @@ const validateEnv = (): Config => {
 
     const config: Config = {
         port: parseInt(process.env.PORT || '4000'),
-        mongoUri: process.env.MONGO_URI || '',
+        mongoUri: process.env.MONGODB_URI || '',
         jwtSecret: process.env.JWT_SECRET || '',
         environment: (process.env.NODE_ENV as 'development' | 'production' | 'test') || 'development',
         corsOrigin: process.env.CORS_ORIGIN?.split(',') || ['http://localhost:3000'],
@@ -43,4 +41,24 @@ const validateEnv = (): Config => {
     return config;
 };
 
-export const env = validateEnv(); 
+export const env = validateEnv();
+
+export type Config = {
+  port: number;
+  mongoUri: string;
+  jwtSecret: string;
+  environment: 'development' | 'production' | 'test';
+  corsOrigin: string[];
+  jwtExpiresIn: string;
+  jwtRefreshSecret: string;
+  jwtRefreshExpiresIn: string;
+  bcryptSaltRounds: number;
+  rateLimitWindowMs: number;
+  rateLimitMaxRequests: number;
+  twoFactorAppName: string;
+  twoFactorIssuer: string;
+  logLevel: string;
+  logFilePath: string;
+  apiPrefix: string;
+  graphqlPath: string;
+}; 
