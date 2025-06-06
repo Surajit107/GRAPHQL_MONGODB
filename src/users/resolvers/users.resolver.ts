@@ -1,17 +1,17 @@
 import { Resolver, Query, Mutation, Args, ID } from '@nestjs/graphql';
-import { UseGuards } from '@nestjs/common';
+import { UseGuards, UnauthorizedException } from '@nestjs/common';
 import { UsersService } from '../services/users.service';
 import { User } from '../schemas/user.schema';
-import { CreateUserInput } from '../dto/create-user.input';
-import { UpdateUserInput } from '../dto/update-user.input';
-import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
+import { CreateUserInput, UpdateUserInput } from '../dto/user.input.dto';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
+import { JwtAuthGuard } from '@/auth/guards/jwt-auth.guard';
 
 @Resolver(() => User)
 export class UsersResolver {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(private readonly usersService: UsersService) { }
 
   @Mutation(() => User)
+  @UseGuards(JwtAuthGuard)
   async createUser(@Args('createUserInput') createUserInput: CreateUserInput) {
     return this.usersService.create(createUserInput);
   }
@@ -39,13 +39,22 @@ export class UsersResolver {
   async updateUser(
     @Args('id', { type: () => ID }) id: string,
     @Args('updateUserInput') updateUserInput: UpdateUserInput,
+    @CurrentUser() user: User,
   ) {
+    // Ensure user can only update their own profile
+    if (user._id.toString() !== id) {
+      throw new UnauthorizedException('Cannot update another user');
+    }
     return this.usersService.update(id, updateUserInput);
   }
 
   @Mutation(() => User)
   @UseGuards(JwtAuthGuard)
-  async removeUser(@Args('id', { type: () => ID }) id: string) {
+  async removeUser(@Args('id', { type: () => ID }) id: string, @CurrentUser() user: User) {
+    // Ensure user can only delete their own account
+    if (user._id.toString() !== id) {
+      throw new UnauthorizedException('Cannot delete another user');
+    }
     return this.usersService.remove(id);
   }
 } 

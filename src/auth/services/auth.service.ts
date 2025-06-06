@@ -2,8 +2,7 @@ import { Injectable, UnauthorizedException, BadRequestException } from '@nestjs/
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
 import { UsersService } from '../../users/services/users.service';
-import { LoginInput } from '../dto/login.input';
-import { RegisterInput } from '../dto/register.input';
+import { LoginInput, RegisterInput } from '../dto/auth.input.dto';
 import { User } from '../../users/schemas/user.schema';
 import { LoggerService } from '../../common/services/logger.service';
 import { authenticator } from 'otplib';
