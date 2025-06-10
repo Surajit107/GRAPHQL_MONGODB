@@ -1,0 +1,158 @@
+{
+  "family": "graphql-mongodb-app",
+  "networkMode": "awsvpc",
+  "executionRoleArn": "arn:aws:iam::ACCOUNT_ID:role/ecsTaskExecutionRole",
+  "taskRoleArn": "arn:aws:iam::ACCOUNT_ID:role/ecsTaskRole",
+  "containerDefinitions": [
+    {
+      "name": "auth-service",
+      "image": "ACCOUNT_ID.dkr.ecr.REGION.amazonaws.com/auth-service:latest",
+      "essential": true,
+      "portMappings": [
+        {
+          "containerPort": 3000,
+          "hostPort": 3000,
+          "protocol": "tcp"
+        }
+      ],
+      "environment": [
+        { "name": "NODE_ENV", "value": "production" },
+        { "name": "PORT", "value": "3000" },
+        { "name": "USER_SERVICE_URL", "value": "http://user-service.internal:3000/graphql" },
+        { "name": "COMMON_SERVICE_URL", "value": "http://common-service.internal:3000/graphql" }
+      ],
+      "secrets": [
+        { "name": "MONGODB_URI", "valueFrom": "arn:aws:ssm:REGION:ACCOUNT_ID:parameter/graphql-mongodb/auth-service/MONGODB_URI" },
+        { "name": "JWT_SECRET", "valueFrom": "arn:aws:ssm:REGION:ACCOUNT_ID:parameter/graphql-mongodb/auth-service/JWT_SECRET" },
+        { "name": "JWT_ACCESS_EXPIRATION", "valueFrom": "arn:aws:ssm:REGION:ACCOUNT_ID:parameter/graphql-mongodb/auth-service/JWT_ACCESS_EXPIRATION" },
+        { "name": "JWT_REFRESH_EXPIRATION", "valueFrom": "arn:aws:ssm:REGION:ACCOUNT_ID:parameter/graphql-mongodb/auth-service/JWT_REFRESH_EXPIRATION" }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/graphql-mongodb/auth-service",
+          "awslogs-region": "REGION",
+          "awslogs-stream-prefix": "ecs"
+        }
+      },
+      "healthCheck": {
+        "command": ["CMD-SHELL", "curl -f http://localhost:3000/health || exit 1"],
+        "interval": 30,
+        "timeout": 5,
+        "retries": 3,
+        "startPeriod": 60
+      }
+    },
+    {
+      "name": "user-service",
+      "image": "ACCOUNT_ID.dkr.ecr.REGION.amazonaws.com/user-service:latest",
+      "essential": true,
+      "portMappings": [
+        {
+          "containerPort": 3000,
+          "hostPort": 3000,
+          "protocol": "tcp"
+        }
+      ],
+      "environment": [
+        { "name": "NODE_ENV", "value": "production" },
+        { "name": "PORT", "value": "3000" },
+        { "name": "AUTH_SERVICE_URL", "value": "http://auth-service.internal:3000/graphql" }
+      ],
+      "secrets": [
+        { "name": "MONGODB_URI", "valueFrom": "arn:aws:ssm:REGION:ACCOUNT_ID:parameter/graphql-mongodb/user-service/MONGODB_URI" }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/graphql-mongodb/user-service",
+          "awslogs-region": "REGION",
+          "awslogs-stream-prefix": "ecs"
+        }
+      },
+      "healthCheck": {
+        "command": ["CMD-SHELL", "curl -f http://localhost:3000/health || exit 1"],
+        "interval": 30,
+        "timeout": 5,
+        "retries": 3,
+        "startPeriod": 60
+      }
+    },
+    {
+      "name": "common-service",
+      "image": "ACCOUNT_ID.dkr.ecr.REGION.amazonaws.com/common-service:latest",
+      "essential": true,
+      "portMappings": [
+        {
+          "containerPort": 3000,
+          "hostPort": 3000,
+          "protocol": "tcp"
+        }
+      ],
+      "environment": [
+        { "name": "NODE_ENV", "value": "production" },
+        { "name": "PORT", "value": "3000" }
+      ],
+      "secrets": [
+        { "name": "MONGODB_URI", "valueFrom": "arn:aws:ssm:REGION:ACCOUNT_ID:parameter/graphql-mongodb/common-service/MONGODB_URI" },
+        { "name": "SMTP_HOST", "valueFrom": "arn:aws:ssm:REGION:ACCOUNT_ID:parameter/graphql-mongodb/common-service/SMTP_HOST" },
+        { "name": "SMTP_PORT", "valueFrom": "arn:aws:ssm:REGION:ACCOUNT_ID:parameter/graphql-mongodb/common-service/SMTP_PORT" },
+        { "name": "SMTP_USER", "valueFrom": "arn:aws:ssm:REGION:ACCOUNT_ID:parameter/graphql-mongodb/common-service/SMTP_USER" },
+        { "name": "SMTP_PASSWORD", "valueFrom": "arn:aws:ssm:REGION:ACCOUNT_ID:parameter/graphql-mongodb/common-service/SMTP_PASSWORD" },
+        { "name": "SMTP_FROM", "valueFrom": "arn:aws:ssm:REGION:ACCOUNT_ID:parameter/graphql-mongodb/common-service/SMTP_FROM" }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/graphql-mongodb/common-service",
+          "awslogs-region": "REGION",
+          "awslogs-stream-prefix": "ecs"
+        }
+      },
+      "healthCheck": {
+        "command": ["CMD-SHELL", "curl -f http://localhost:3000/health || exit 1"],
+        "interval": 30,
+        "timeout": 5,
+        "retries": 3,
+        "startPeriod": 60
+      }
+    },
+    {
+      "name": "api-gateway",
+      "image": "ACCOUNT_ID.dkr.ecr.REGION.amazonaws.com/api-gateway:latest",
+      "essential": true,
+      "portMappings": [
+        {
+          "containerPort": 3000,
+          "hostPort": 3000,
+          "protocol": "tcp"
+        }
+      ],
+      "environment": [
+        { "name": "NODE_ENV", "value": "production" },
+        { "name": "PORT", "value": "3000" },
+        { "name": "AUTH_SERVICE_URL", "value": "http://auth-service.internal:3000/graphql" },
+        { "name": "USER_SERVICE_URL", "value": "http://user-service.internal:3000/graphql" },
+        { "name": "COMMON_SERVICE_URL", "value": "http://common-service.internal:3000/graphql" }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/graphql-mongodb/api-gateway",
+          "awslogs-region": "REGION",
+          "awslogs-stream-prefix": "ecs"
+        }
+      },
+      "healthCheck": {
+        "command": ["CMD-SHELL", "curl -f http://localhost:3000/health || exit 1"],
+        "interval": 30,
+        "timeout": 5,
+        "retries": 3,
+        "startPeriod": 60
+      }
+    }
+  ],
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "1024",
+  "memory": "2048"
+}

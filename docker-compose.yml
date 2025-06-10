@@ -1,0 +1,108 @@
+version: '3.9'
+
+services:
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - app-network
+    environment:
+      - MONGO_INITDB_DATABASE=graphql-mongodb
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  auth-service:
+    build:
+      context: ./auth-service
+      dockerfile: Dockerfile
+    container_name: auth-service
+    ports:
+      - "3001:3000"
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - app-network
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - MONGODB_URI=mongodb://mongodb:27017/auth-service
+      - CORS_ORIGIN=http://localhost:3000
+      - USER_SERVICE_URL=http://user-service:3000/graphql
+      - COMMON_SERVICE_URL=http://common-service:3000/graphql
+    restart: unless-stopped
+
+  user-service:
+    build:
+      context: ./user-service
+      dockerfile: Dockerfile
+    container_name: user-service
+    ports:
+      - "3002:3000"
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - app-network
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - MONGODB_URI=mongodb://mongodb:27017/user-service
+      - CORS_ORIGIN=http://localhost:3000
+      - AUTH_SERVICE_URL=http://auth-service:3000/graphql
+    restart: unless-stopped
+
+  common-service:
+    build:
+      context: ./common-service
+      dockerfile: Dockerfile
+    container_name: common-service
+    ports:
+      - "3003:3000"
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - app-network
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - MONGODB_URI=mongodb://mongodb:27017/common-service
+      - CORS_ORIGIN=http://localhost:3000
+    restart: unless-stopped
+
+  api-gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile.gateway
+    container_name: api-gateway
+    ports:
+      - "3000:3000"
+    depends_on:
+      - auth-service
+      - user-service
+      - common-service
+    networks:
+      - app-network
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - AUTH_SERVICE_URL=http://auth-service:3000/graphql
+      - USER_SERVICE_URL=http://user-service:3000/graphql
+      - COMMON_SERVICE_URL=http://common-service:3000/graphql
+    restart: unless-stopped
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  mongodb_data:

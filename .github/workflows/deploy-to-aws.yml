@@ -1,0 +1,113 @@
+name: Deploy to AWS ECS
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    name: Build and Deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      # Build and push auth-service
+      - name: Build and push auth-service
+        uses: docker/build-push-action@v4
+        with:
+          context: ./auth-service
+          push: true
+          tags: ${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY_PREFIX }}-auth-service:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # Build and push user-service
+      - name: Build and push user-service
+        uses: docker/build-push-action@v4
+        with:
+          context: ./user-service
+          push: true
+          tags: ${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY_PREFIX }}-user-service:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # Build and push common-service
+      - name: Build and push common-service
+        uses: docker/build-push-action@v4
+        with:
+          context: ./common-service
+          push: true
+          tags: ${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY_PREFIX }}-common-service:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # Build and push api-gateway
+      - name: Build and push api-gateway
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: ./Dockerfile.gateway
+          push: true
+          tags: ${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY_PREFIX }}-api-gateway:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # Update task definition with new image URIs
+      - name: Fill in the new image IDs in the Amazon ECS task definition
+        id: task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: aws-ecs-task-definition.json
+          container-name: api-gateway
+          image: ${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY_PREFIX }}-api-gateway:${{ github.sha }}
+
+      # Update task definition for auth-service
+      - name: Update auth-service in task definition
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: ${{ steps.task-def.outputs.task-definition }}
+          container-name: auth-service
+          image: ${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY_PREFIX }}-auth-service:${{ github.sha }}
+
+      # Update task definition for user-service
+      - name: Update user-service in task definition
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: ${{ steps.task-def.outputs.task-definition }}
+          container-name: user-service
+          image: ${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY_PREFIX }}-user-service:${{ github.sha }}
+
+      # Update task definition for common-service
+      - name: Update common-service in task definition
+        id: render-final-task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: ${{ steps.task-def.outputs.task-definition }}
+          container-name: common-service
+          image: ${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY_PREFIX }}-common-service:${{ github.sha }}
+
+      # Deploy to Amazon ECS
+      - name: Deploy Amazon ECS task definition
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          task-definition: ${{ steps.render-final-task-def.outputs.task-definition }}
+          service: ${{ secrets.ECS_SERVICE }}
+          cluster: ${{ secrets.ECS_CLUSTER }}
+          wait-for-service-stability: true

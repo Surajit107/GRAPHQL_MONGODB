@@ -1,0 +1,17 @@
+node_modules
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+.git
+.env
+.DS_Store
+.vscode
+coverage
+dist
+logs
+*.log
+
+# Ignore microservice directories when building the gateway
+auth-service/
+user-service/
+common-service/
