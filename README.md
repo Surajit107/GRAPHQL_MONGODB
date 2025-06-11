@@ -1,139 +1,135 @@
-# GraphQL MongoDB Microservices
+# GraphQL MongoDB API with NestJS
 
-A production-ready microservices architecture using NestJS, GraphQL, and MongoDB.
+A production-ready GraphQL API built with NestJS, MongoDB, and TypeScript, featuring user authentication and modern development practices.
 
-## Architecture
+## Features
 
-```mermaid
-graph TD
-    Client[Client] --> Gateway[API Gateway :3000]
-    Gateway --> Auth[Auth Service :3001]
-    Gateway --> User[User Service :3002]
-    Gateway --> Common[Common Service :3003]
-    Auth --> MongoDB[(MongoDB)]
-    User --> MongoDB
-    Common --> MongoDB
-```
-
-## Services
-
-- **API Gateway** (Port 3000): Routes requests to appropriate microservices
-- **Auth Service** (Port 3001): Handles authentication, 2FA, and authorization
-- **User Service** (Port 3002): Manages user data and operations
-- **Common Service** (Port 3003): Provides shared utilities and services
+- 🚀 **NestJS** - A progressive Node.js framework
+- 📊 **GraphQL** - Modern API query language
+- 🗄️ **MongoDB** - NoSQL database with Mongoose ODM
+- 🔐 **Authentication** - JWT-based authentication with refresh tokens
+- 🛡️ **Security** - Built-in security features (Helmet, CORS, Rate Limiting)
+- 📝 **Validation** - Request validation using class-validator
+- 🔍 **Logging** - Structured logging with Winston
+- 🧪 **Testing** - Jest testing framework
+- 🎨 **Code Style** - ESLint and Prettier for consistent code style
 
 ## Prerequisites
 
-- Node.js >= 18.0.0
-- MongoDB
-- Docker & Docker Compose (for production deployment)
+- Node.js (>= 18.0.0)
+- MongoDB (>= 4.4)
+- npm or yarn
 
-## Quick Start
+## Installation
 
-1. **Install Dependencies**
 ```bash
-npm run install:all
+# Clone the repository
+git clone <repository-url>
+
+# Navigate to project directory
+cd graphql_mongodb
+
+# Install dependencies
+npm install
+
+# Copy environment file
+cp .env.sample .env
+
+# Update environment variables in .env
 ```
 
-2. **Development Mode**
+## Environment Variables
+
+Create a `.env` file in the root directory with the following variables:
+
+```env
+# Application
+NODE_ENV=development
+PORT=3000
+CORS_ORIGIN=*
+
+# Database
+MONGODB_URI=mongodb://localhost:27017/graphql_mongodb
+
+# Authentication
+JWT_SECRET=your-jwt-secret
+JWT_REFRESH_SECRET=your-jwt-refresh-secret
+JWT_EXPIRATION=1d
+JWT_REFRESH_EXPIRATION=7d
+
+# Logging
+LOG_LEVEL=info
+```
+
+## Running the Application
+
 ```bash
-# Start all services in development mode
+# Development
 npm run start:dev
 
-# Start individual services
-npm run start:auth    # Auth Service
-npm run start:user    # User Service
-npm run start:common  # Common Service
+# Production
+npm run build
+npm run start:prod
+
+# Debug
+npm run start:debug
 ```
 
-3. **Production Mode (Docker)**
+## API Documentation
+
+Once the application is running, you can access:
+
+- GraphQL Playground: http://localhost:3000/graphql
+- API Documentation: http://localhost:3000/api
+
+## Testing
+
 ```bash
-# Build and start all services
-npm run docker:build
-npm run docker:up
+# Unit tests
+npm run test
 
-# View logs
-npm run docker:logs
+# e2e tests
+npm run test:e2e
 
-# Stop services
-npm run docker:down
+# Test coverage
+npm run test:cov
+```
+
+## Project Structure
+
+```
+src/
+├── auth/                 # Authentication module
+├── users/               # Users module
+├── common/              # Common utilities and services
+├── config/              # Configuration files
+├── app.module.ts        # Root application module
+└── main.ts             # Application entry point
 ```
 
 ## Available Scripts
 
-### Development
-- `npm run install:all` - Install dependencies for all services
-- `npm run start:dev` - Start all services in development mode
-- `npm run build:all` - Build all services
-- `npm run test:all` - Run tests for all services
-- `npm run lint:all` - Run linting for all services
-
-### Docker Operations
-- `npm run docker:build` - Build Docker images
-- `npm run docker:up` - Start Docker containers
-- `npm run docker:down` - Stop Docker containers
-- `npm run docker:logs` - View Docker logs
-
-### Maintenance
-- `npm run clean:all` - Clean build files and node_modules
-- `npm run lint:all` - Lint all services
-
-## Service Endpoints
-
-### Development URLs
-- Auth Service: http://localhost:3001/auth/graphql
-- User Service: http://localhost:3002/users/graphql
-- Common Service: http://localhost:3003/common
-
-### Production URLs (via API Gateway)
-- Main Endpoint: http://localhost:3000/graphql
-
-## Best Practices
-
-1. **Service Independence**
-   - Each service has its own database schema
-   - Services communicate via well-defined APIs
-   - No shared database access between services
-
-2. **Security**
-   - All services use helmet for security headers
-   - CORS is properly configured
-   - Authentication is centralized in Auth Service
-
-3. **Monitoring & Logging**
-   - Each service has its own logger
-   - Health check endpoints are available
-   - Docker logs are centralized
-
-4. **Scalability**
-   - Services can be scaled independently
-   - Docker Compose for easy deployment
-   - Environment-based configuration
-
-5. **Development Workflow**
-   - Consistent code style with ESLint
-   - Automated testing with Jest
-   - Clear separation of concerns
-
-## Directory Structure
-
-```
-.
-├── auth-service/       # Authentication service
-├── user-service/       # User management service
-├── common-service/     # Shared utilities service
-├── docker-compose.yml  # Docker composition
-├── package.json        # Root package file
-└── README.md          # Documentation
-```
+- `npm run start:dev` - Start development server
+- `npm run build` - Build the application
+- `npm run start:prod` - Start production server
+- `npm run lint` - Lint the code
+- `npm run format` - Format the code
+- `npm run test` - Run unit tests
+- `npm run test:e2e` - Run e2e tests
+- `npm run test:cov` - Run test coverage
 
 ## Contributing
 
-1. Follow the established code style
-2. Write tests for new features
-3. Update documentation as needed
-4. Use feature branches and pull requests
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
 ## License
 
-ISC License
+This project is licensed under the ISC License.
+
+## Support
+
+For support, please open an issue in the GitHub repository. 

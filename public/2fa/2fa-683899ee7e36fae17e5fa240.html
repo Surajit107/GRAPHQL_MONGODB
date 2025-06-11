@@ -1,0 +1,81 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>2FA QR Code</title>
+  <style>
+    
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap');
+
+body {
+  margin: 20px;
+  background: radial-gradient(circle at center, #0f0f13 0%, #050507 90%);
+  font-family: 'Orbitron', sans-serif;
+  color: #00fff7;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  min-height: 100vh;
+  user-select: none;
+}
+
+h1 {
+  font-size: 3rem;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  margin-bottom: 40px;
+  color: #00fff7;
+  text-shadow:
+    0 0 8px #00fff7,
+    0 0 20px #00fff7,
+    0 0 40px #00fff7;
+  animation: flicker 3s infinite;
+}
+
+#qrCodeImg {
+  width: 320px;
+  height: 320px;
+  border-radius: 24px;
+  box-shadow:
+    0 0 15px #00fff7,
+    0 0 40px #00fff7 inset,
+    0 0 80px #00fff7;
+  transition: box-shadow 0.3s ease;
+  cursor: pointer;
+}
+
+#qrCodeImg:hover {
+  box-shadow:
+    0 0 25px #00fff7,
+    0 0 70px #00fff7 inset,
+    0 0 120px #00fff7;
+  transform: scale(1.05);
+  transition: all 0.3s ease;
+}
+
+@keyframes flicker {
+
+  0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% {
+    opacity: 1;
+    text-shadow:
+      0 0 8px #00fff7,
+      0 0 20px #00fff7,
+      0 0 40px #00fff7;
+  }
+
+  20%, 22%, 24%, 55% {
+    opacity: 0.7;
+    text-shadow: none;
+  }
+}
+
+  </style>
+</head>
+<body>
+  <h1>Scan this 2FA QR Code</h1>
+  <img id="qrCodeImg" src="data:image/png;base64,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" alt="2FA QR Code" />
+</body>
+</html>
